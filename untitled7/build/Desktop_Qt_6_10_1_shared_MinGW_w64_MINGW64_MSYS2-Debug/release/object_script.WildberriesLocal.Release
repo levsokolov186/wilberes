@@ -1,0 +1,11 @@
+release/main.o
+release/mainwindow.o
+release/product.o
+release/productcard.o
+release/cartdialog.o
+release/productdetaildialog.o
+release/qrc_resources.o
+release/moc_mainwindow.o
+release/moc_productcard.o
+release/moc_cartdialog.o
+release/moc_productdetaildialog.o
