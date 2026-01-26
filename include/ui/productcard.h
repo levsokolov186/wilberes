@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <QGraphicsDropShadowEffect>
 #include "product.h"
 
 class ProductCard : public QWidget {
@@ -12,6 +13,8 @@ class ProductCard : public QWidget {
 public:
     explicit ProductCard(const Product& product, QWidget *parent = nullptr);
     void updateProduct(const Product& product);
+    
+    const Product& getProduct() const noexcept { return m_product; }
 
 signals:
     void addToCartClicked(const Product& product);
@@ -26,6 +29,8 @@ private:
     void setupUI();
 
     Product m_product;
+    
+    // Элементы интерфейса
     QLabel* m_imageLabel;
     QLabel* m_discountLabel;
     QLabel* m_nameLabel;
@@ -34,6 +39,9 @@ private:
     QLabel* m_oldPriceLabel;
     QLabel* m_ratingLabel;
     QPushButton* m_addButton;
+    
+    // Многоразовый эффект тени (предотвращает утечку памяти при наведении)
+    QGraphicsDropShadowEffect* m_shadowEffect;
 };
 
 #endif // PRODUCTCARD_H

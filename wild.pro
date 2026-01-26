@@ -4,29 +4,29 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-# Include paths
+# Пути для подключения заголовков
 INCLUDEPATH += \
     include \
     include/core \
     include/models \
     include/ui
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+# Вы можете заставить код не компилироваться, если он использует устаревшие API.
+# Для этого раскомментируйте следующую строку.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # отключает все API, устаревшие до Qt 6.0.0
 
-# === Source Files ===
+# === Исходные файлы ===
 
 SOURCES += \
     src/main.cpp \
-    # Core
+    # Ядро
     src/core/database.cpp \
     src/core/theme_manager.cpp \
-    # Models
+    # Модели
     src/models/cart.cpp \
     src/models/product.cpp \
     src/models/user.cpp \
-    # UI
+    # Интерфейс
     src/ui/adminpanel.cpp \
     src/ui/cartwidget.cpp \
     src/ui/loginwindow.cpp \
@@ -35,17 +35,17 @@ SOURCES += \
     src/ui/profilewidget.cpp \
     src/ui/registerwindow.cpp
 
-# === Header Files ===
+# === Заголовочные файлы ===
 
 HEADERS += \
-    # Core
+    # Ядро
     include/core/database.h \
     include/core/theme_manager.h \
-    # Models
+    # Модели
     include/models/cart.h \
     include/models/product.h \
     include/models/user.h \
-    # UI
+    # Интерфейс
     include/ui/adminpanel.h \
     include/ui/cartwidget.h \
     include/ui/loginwindow.h \
@@ -54,17 +54,17 @@ HEADERS += \
     include/ui/profilewidget.h \
     include/ui/registerwindow.h
 
-# === UI Forms ===
+# === Формы интерфейса ===
 
 FORMS += \
     forms/mainwindow.ui
 
-# === Resources ===
+# === Ресурсы ===
 
 RESOURCES += \
     resources/styles/styles.qrc
 
-# Default rules for deployment.
+# Правила развертывания по умолчанию.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target

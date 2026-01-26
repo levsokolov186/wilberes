@@ -11,20 +11,43 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , m_database(nullptr)
     , m_currentUser(nullptr)
     , m_cart(nullptr)
+    , m_stackedWidget(nullptr)
+    , m_loginWindow(nullptr)
+    , m_registerWindow(nullptr)
+    , m_mainPage(nullptr)
+    , m_cartWidget(nullptr)
+    , m_profileWidget(nullptr)
     , m_adminPanel(nullptr)
     , m_settingsPage(nullptr)
     , m_cartPageWrapper(nullptr)
     , m_profilePageWrapper(nullptr)
     , m_settingsPageWrapper(nullptr)
     , m_adminPageWrapper(nullptr)
+    , m_header(nullptr)
+    , m_searchEdit(nullptr)
+    , m_categoryList(nullptr)
+    , m_productsGrid(nullptr)
+    , m_productsScrollArea(nullptr)
+    , m_cartButton(nullptr)
+    , m_cartBadge(nullptr)
+    , m_profileButton(nullptr)
+    , m_adminButton(nullptr)
+    , m_settingsButton(nullptr)
+    , m_userLabel(nullptr)
+    , m_sidebarCatalogBtn(nullptr)
+    , m_sidebarCartBtn(nullptr)
+    , m_sidebarProfileBtn(nullptr)
+    , m_sidebarSettingsBtn(nullptr)
+    , m_sidebarAdminBtn(nullptr)
     , m_sidebarButtonGroup(nullptr)
     , m_themeComboBox(nullptr)
 {
     m_database = new Database("data/");
 
-    // Убираем стандартные menubar и statusbar
+    // Удаление стандартного меню и строки состояния
     setMenuBar(nullptr);
     setStatusBar(nullptr);
 
@@ -36,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     delete m_database;
-    if (m_cart) delete m_cart;
+    delete m_cart;
 }
 
 void MainWindow::setupUI() {
@@ -51,13 +74,13 @@ void MainWindow::setupUI() {
     m_registerWindow = new RegisterWindow(m_database);
     m_stackedWidget->addWidget(m_registerWindow);
 
-    // Подключения для авторизации
+    // Соединение сигналов аутентификации
     connect(m_loginWindow, &LoginWindow::loginSuccess, this, &MainWindow::onLoginSuccess);
     connect(m_loginWindow, &LoginWindow::registerClicked, this, &MainWindow::showRegister);
     connect(m_registerWindow, &RegisterWindow::registerSuccess, this, &MainWindow::onRegisterSuccess);
     connect(m_registerWindow, &RegisterWindow::backToLogin, this, &MainWindow::showLogin);
 
-    // Подключаем сигнал изменения темы
+    // Соединение сигнала смены темы
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged,
             this, &MainWindow::onThemeApplied);
 }
@@ -109,23 +132,22 @@ void MainWindow::setupMainUI() {
 
     sidebarLayout->addSpacing(20);
 
-    // Группа кнопок навигации
+    // Группа навигационных кнопок
     m_sidebarButtonGroup = new QButtonGroup(this);
     m_sidebarButtonGroup->setExclusive(true);
 
-    // Кнопка Каталог
-    m_sidebarCatalogBtn = new QPushButton("  Каталог");
+    // Кнопка каталога
+    m_sidebarCatalogBtn = new QPushButton("  Catalog");
     m_sidebarCatalogBtn->setObjectName("sidebarButton");
     m_sidebarCatalogBtn->setCheckable(true);
     m_sidebarCatalogBtn->setChecked(true);
     m_sidebarCatalogBtn->setCursor(Qt::PointingHandCursor);
-    m_sidebarCatalogBtn->setIcon(QIcon());
     m_sidebarButtonGroup->addButton(m_sidebarCatalogBtn, 0);
     sidebarLayout->addWidget(m_sidebarCatalogBtn);
     connect(m_sidebarCatalogBtn, &QPushButton::clicked, this, &MainWindow::showCatalog);
 
-    // Кнопка Корзина
-    m_sidebarCartBtn = new QPushButton("  Корзина");
+    // Кнопка корзины
+    m_sidebarCartBtn = new QPushButton("  Cart");
     m_sidebarCartBtn->setObjectName("sidebarButton");
     m_sidebarCartBtn->setCheckable(true);
     m_sidebarCartBtn->setCursor(Qt::PointingHandCursor);
@@ -133,8 +155,8 @@ void MainWindow::setupMainUI() {
     sidebarLayout->addWidget(m_sidebarCartBtn);
     connect(m_sidebarCartBtn, &QPushButton::clicked, this, &MainWindow::showCart);
 
-    // Кнопка Профиль
-    m_sidebarProfileBtn = new QPushButton("  Профиль");
+    // Кнопка профиля
+    m_sidebarProfileBtn = new QPushButton("  Profile");
     m_sidebarProfileBtn->setObjectName("sidebarButton");
     m_sidebarProfileBtn->setCheckable(true);
     m_sidebarProfileBtn->setCursor(Qt::PointingHandCursor);
@@ -142,8 +164,8 @@ void MainWindow::setupMainUI() {
     sidebarLayout->addWidget(m_sidebarProfileBtn);
     connect(m_sidebarProfileBtn, &QPushButton::clicked, this, &MainWindow::showProfile);
 
-    // Кнопка Настройки
-    m_sidebarSettingsBtn = new QPushButton("  Настройки");
+    // Кнопка настроек
+    m_sidebarSettingsBtn = new QPushButton("  Settings");
     m_sidebarSettingsBtn->setObjectName("sidebarButton");
     m_sidebarSettingsBtn->setCheckable(true);
     m_sidebarSettingsBtn->setCursor(Qt::PointingHandCursor);
@@ -151,8 +173,8 @@ void MainWindow::setupMainUI() {
     sidebarLayout->addWidget(m_sidebarSettingsBtn);
     connect(m_sidebarSettingsBtn, &QPushButton::clicked, this, &MainWindow::showSettings);
 
-    // Кнопка Админ-панель (скрыта для обычных пользователей)
-    m_sidebarAdminBtn = new QPushButton("  Админ-панель");
+    // Кнопка панели администратора (скрыта для обычных пользователей)
+    m_sidebarAdminBtn = new QPushButton("  Admin Panel");
     m_sidebarAdminBtn->setObjectName("sidebarButton");
     m_sidebarAdminBtn->setCheckable(true);
     m_sidebarAdminBtn->setCursor(Qt::PointingHandCursor);
@@ -172,7 +194,7 @@ void MainWindow::setupMainUI() {
     sidebarLayout->addSpacing(16);
 
     // Кнопка выхода
-    QPushButton* logoutBtn = new QPushButton("  Выйти");
+    QPushButton* logoutBtn = new QPushButton("  Sign Out");
     logoutBtn->setObjectName("sidebarLogoutButton");
     logoutBtn->setCursor(Qt::PointingHandCursor);
     sidebarLayout->addWidget(logoutBtn);
@@ -191,7 +213,7 @@ void MainWindow::setupMainUI() {
     contentWrapperLayout->setSpacing(0);
     contentWrapperLayout->setContentsMargins(0, 0, 0, 0);
 
-    // === HEADER ===
+    // === ШАПКА ===
     m_header = new QWidget;
     m_header->setObjectName("headerBar");
     m_header->setFixedHeight(70);
@@ -203,7 +225,7 @@ void MainWindow::setupMainUI() {
     // Поле поиска
     m_searchEdit = new QLineEdit;
     m_searchEdit->setObjectName("searchField");
-    m_searchEdit->setPlaceholderText("Поиск товаров...");
+    m_searchEdit->setPlaceholderText("Search products...");
     m_searchEdit->setMinimumWidth(300);
     m_searchEdit->setMaximumWidth(500);
     connect(m_searchEdit, &QLineEdit::returnPressed, this, &MainWindow::onSearch);
@@ -211,20 +233,20 @@ void MainWindow::setupMainUI() {
 
     headerLayout->addStretch();
 
-    // Баланс пользователя в хедере
+    // Иконка баланса в шапке
     QLabel* balanceIcon = new QLabel;
     balanceIcon->setObjectName("headerBalanceIcon");
-    balanceIcon->setText("₽");
+    balanceIcon->setText("$");
     headerLayout->addWidget(balanceIcon);
 
-    // Корзина с бейджем
+    // Корзина с индикатором
     QWidget* cartContainer = new QWidget;
     cartContainer->setObjectName("cartButtonContainer");
     QHBoxLayout* cartLayout = new QHBoxLayout(cartContainer);
     cartLayout->setContentsMargins(0, 0, 0, 0);
     cartLayout->setSpacing(0);
 
-    m_cartButton = new QPushButton("Корзина");
+    m_cartButton = new QPushButton("Cart");
     m_cartButton->setObjectName("headerCartButton");
     m_cartButton->setCursor(Qt::PointingHandCursor);
     connect(m_cartButton, &QPushButton::clicked, this, &MainWindow::showCart);
@@ -240,14 +262,14 @@ void MainWindow::setupMainUI() {
     headerLayout->addWidget(cartContainer);
 
     // Профиль
-    m_profileButton = new QPushButton("Профиль");
+    m_profileButton = new QPushButton("Profile");
     m_profileButton->setObjectName("headerButton");
     m_profileButton->setCursor(Qt::PointingHandCursor);
     connect(m_profileButton, &QPushButton::clicked, this, &MainWindow::showProfile);
     headerLayout->addWidget(m_profileButton);
 
     // Админ
-    m_adminButton = new QPushButton("Админ");
+    m_adminButton = new QPushButton("Admin");
     m_adminButton->setObjectName("headerAdminButton");
     m_adminButton->setCursor(Qt::PointingHandCursor);
     connect(m_adminButton, &QPushButton::clicked, this, &MainWindow::showAdmin);
@@ -256,16 +278,16 @@ void MainWindow::setupMainUI() {
     // Настройки
     m_settingsButton = new QPushButton();
     m_settingsButton->setObjectName("headerSettingsButton");
-    m_settingsButton->setText("⚙");
+    m_settingsButton->setText("*");
     m_settingsButton->setFixedSize(40, 40);
     m_settingsButton->setCursor(Qt::PointingHandCursor);
-    m_settingsButton->setToolTip("Настройки");
+    m_settingsButton->setToolTip("Settings");
     connect(m_settingsButton, &QPushButton::clicked, this, &MainWindow::showSettings);
     headerLayout->addWidget(m_settingsButton);
 
     contentWrapperLayout->addWidget(m_header);
 
-    // === MAIN CONTENT AREA ===
+    // === ОСНОВНАЯ ОБЛАСТЬ КОНТЕНТА ===
     QWidget* mainContentArea = new QWidget;
     mainContentArea->setObjectName("mainContentArea");
 
@@ -282,7 +304,7 @@ void MainWindow::setupMainUI() {
     categoryLayout->setContentsMargins(0, 0, 0, 0);
     categoryLayout->setSpacing(0);
 
-    QLabel* categoryTitle = new QLabel("Категории");
+    QLabel* categoryTitle = new QLabel("Categories");
     categoryTitle->setObjectName("categoryTitle");
     categoryLayout->addWidget(categoryTitle);
 
@@ -290,8 +312,8 @@ void MainWindow::setupMainUI() {
     m_categoryList->setObjectName("categoryList");
     m_categoryList->setFrameShape(QFrame::NoFrame);
 
-    // Добавляем категории
-    m_categoryList->addItem("Все товары");
+    // Добавление категорий
+    m_categoryList->addItem("All Products");
     for (const auto& cat : m_database->getCategories()) {
         m_categoryList->addItem(QString::fromStdString(cat));
     }
@@ -303,7 +325,7 @@ void MainWindow::setupMainUI() {
 
     mainContentLayout->addWidget(categorySidebar);
 
-    // Область с товарами
+    // Область товаров
     m_productsScrollArea = new QScrollArea;
     m_productsScrollArea->setObjectName("productsScrollArea");
     m_productsScrollArea->setWidgetResizable(true);
@@ -324,12 +346,12 @@ void MainWindow::setupMainUI() {
 
     rootLayout->addWidget(contentWrapper, 1);
 
-    // Добавляем главную страницу в стек
+    // Добавление главной страницы в стек
     m_stackedWidget->addWidget(m_mainPage);
 
-    // === Создаем дополнительные страницы ===
+    // === Создание дополнительных страниц ===
 
-    // Корзина (обёрнутая в контейнер с кнопкой назад)
+    // Обертка страницы корзины
     m_cartPageWrapper = new QWidget;
     m_cartPageWrapper->setObjectName("pageWrapper");
     QVBoxLayout* cartPageLayout = new QVBoxLayout(m_cartPageWrapper);
@@ -341,7 +363,7 @@ void MainWindow::setupMainUI() {
     cartHeader->setFixedHeight(50);
     QHBoxLayout* cartHeaderLayout = new QHBoxLayout(cartHeader);
     cartHeaderLayout->setContentsMargins(20, 0, 20, 0);
-    QPushButton* cartBackBtn = new QPushButton("← Назад в каталог");
+    QPushButton* cartBackBtn = new QPushButton("<- Back to Catalog");
     cartBackBtn->setObjectName("backButton");
     cartBackBtn->setCursor(Qt::PointingHandCursor);
     connect(cartBackBtn, &QPushButton::clicked, this, &MainWindow::showCatalog);
@@ -355,7 +377,7 @@ void MainWindow::setupMainUI() {
     cartPageLayout->addWidget(m_cartWidget, 1);
     m_stackedWidget->addWidget(m_cartPageWrapper);
 
-    // Профиль (обёрнутый в контейнер с кнопкой назад)
+    // Обертка страницы профиля
     m_profilePageWrapper = new QWidget;
     m_profilePageWrapper->setObjectName("pageWrapper");
     QVBoxLayout* profilePageLayout = new QVBoxLayout(m_profilePageWrapper);
@@ -367,7 +389,7 @@ void MainWindow::setupMainUI() {
     profileHeader->setFixedHeight(50);
     QHBoxLayout* profileHeaderLayout = new QHBoxLayout(profileHeader);
     profileHeaderLayout->setContentsMargins(20, 0, 20, 0);
-    QPushButton* profileBackBtn = new QPushButton("← Назад в каталог");
+    QPushButton* profileBackBtn = new QPushButton("<- Back to Catalog");
     profileBackBtn->setObjectName("backButton");
     profileBackBtn->setCursor(Qt::PointingHandCursor);
     connect(profileBackBtn, &QPushButton::clicked, this, &MainWindow::showCatalog);
@@ -379,13 +401,13 @@ void MainWindow::setupMainUI() {
     connect(m_profileWidget, &ProfileWidget::logoutClicked, this, &MainWindow::logout);
     connect(m_profileWidget, &ProfileWidget::balanceChanged, this, [this]() {
         if (m_currentUser) {
-            m_userLabel->setText(QString("Баланс: %1 ₽").arg(m_currentUser->getBalance(), 0, 'f', 0));
+            m_userLabel->setText(QString("Balance: %1 $").arg(m_currentUser->getBalance(), 0, 'f', 0));
         }
     });
     profilePageLayout->addWidget(m_profileWidget, 1);
     m_stackedWidget->addWidget(m_profilePageWrapper);
 
-    // Настройки (обёрнутые в контейнер с кнопкой назад)
+    // Обертка страницы настроек
     m_settingsPageWrapper = new QWidget;
     m_settingsPageWrapper->setObjectName("pageWrapper");
     QVBoxLayout* settingsWrapperLayout = new QVBoxLayout(m_settingsPageWrapper);
@@ -397,7 +419,7 @@ void MainWindow::setupMainUI() {
     settingsHeader->setFixedHeight(50);
     QHBoxLayout* settingsHeaderLayout = new QHBoxLayout(settingsHeader);
     settingsHeaderLayout->setContentsMargins(20, 0, 20, 0);
-    QPushButton* settingsBackBtn = new QPushButton("← Назад в каталог");
+    QPushButton* settingsBackBtn = new QPushButton("<- Back to Catalog");
     settingsBackBtn->setObjectName("backButton");
     settingsBackBtn->setCursor(Qt::PointingHandCursor);
     connect(settingsBackBtn, &QPushButton::clicked, this, &MainWindow::showCatalog);
@@ -409,7 +431,7 @@ void MainWindow::setupMainUI() {
     settingsWrapperLayout->addWidget(m_settingsPage, 1);
     m_stackedWidget->addWidget(m_settingsPageWrapper);
 
-    // Админ-панель (только для админов, с кнопкой назад)
+    // Панель администратора (только для админов)
     m_adminPageWrapper = nullptr;
     if (m_currentUser && m_currentUser->isAdmin()) {
         m_adminPageWrapper = new QWidget;
@@ -423,7 +445,7 @@ void MainWindow::setupMainUI() {
         adminHeader->setFixedHeight(50);
         QHBoxLayout* adminHeaderLayout = new QHBoxLayout(adminHeader);
         adminHeaderLayout->setContentsMargins(20, 0, 20, 0);
-        QPushButton* adminBackBtn = new QPushButton("← Назад в каталог");
+        QPushButton* adminBackBtn = new QPushButton("<- Back to Catalog");
         adminBackBtn->setObjectName("backButton");
         adminBackBtn->setCursor(Qt::PointingHandCursor);
         connect(adminBackBtn, &QPushButton::clicked, this, &MainWindow::showCatalog);
@@ -442,7 +464,7 @@ void MainWindow::setupMainUI() {
         m_sidebarAdminBtn->setVisible(false);
     }
 
-    // Отображаем товары
+    // Отображение товаров
     displayProducts(m_database->getAllProducts());
 }
 
@@ -455,7 +477,7 @@ void MainWindow::setupSettingsPage() {
     mainLayout->setContentsMargins(40, 40, 40, 40);
 
     // Заголовок
-    QLabel* titleLabel = new QLabel("Настройки");
+    QLabel* titleLabel = new QLabel("Settings");
     titleLabel->setObjectName("pageTitle");
     mainLayout->addWidget(titleLabel);
 
@@ -468,7 +490,7 @@ void MainWindow::setupSettingsPage() {
     themeCardLayout->setSpacing(20);
     themeCardLayout->setContentsMargins(24, 24, 24, 24);
 
-    QLabel* themeTitle = new QLabel("Оформление");
+    QLabel* themeTitle = new QLabel("Appearance");
     themeTitle->setObjectName("settingsCardTitle");
     themeCardLayout->addWidget(themeTitle);
 
@@ -476,15 +498,15 @@ void MainWindow::setupSettingsPage() {
     QHBoxLayout* themeSelectLayout = new QHBoxLayout;
     themeSelectLayout->setSpacing(16);
 
-    QLabel* themeLabel = new QLabel("Тема:");
+    QLabel* themeLabel = new QLabel("Theme:");
     themeLabel->setObjectName("settingsLabel");
     themeSelectLayout->addWidget(themeLabel);
 
     m_themeComboBox = new QComboBox;
     m_themeComboBox->setObjectName("themeComboBox");
     m_themeComboBox->setMinimumWidth(200);
-    m_themeComboBox->addItem("Светлая", static_cast<int>(ThemeType::Light));
-    m_themeComboBox->addItem("Тёмная", static_cast<int>(ThemeType::Dark));
+    m_themeComboBox->addItem("Light", static_cast<int>(ThemeType::Light));
+    m_themeComboBox->addItem("Dark", static_cast<int>(ThemeType::Dark));
     m_themeComboBox->addItem("Wildberries", static_cast<int>(ThemeType::Wildberries));
 
     syncThemeComboBox();
@@ -497,11 +519,11 @@ void MainWindow::setupSettingsPage() {
 
     themeCardLayout->addLayout(themeSelectLayout);
 
-    // Описание тем
+    // Описания тем
     QLabel* themeDesc = new QLabel(
-        "• Светлая — классическая светлая тема\n"
-        "• Тёмная — тёмное оформление для комфортной работы\n"
-        "• Wildberries — фирменный стиль маркетплейса"
+        "- Light: Classic light theme\n"
+        "- Dark: Dark mode for comfortable work\n"
+        "- Wildberries: Marketplace brand style"
     );
     themeDesc->setObjectName("settingsDescription");
     themeDesc->setWordWrap(true);
@@ -509,7 +531,7 @@ void MainWindow::setupSettingsPage() {
 
     mainLayout->addWidget(themeCard);
 
-    // Карточка "О приложении"
+    // Карточка "О программе"
     QWidget* aboutCard = new QWidget;
     aboutCard->setObjectName("settingsCard");
     aboutCard->setMaximumWidth(600);
@@ -518,13 +540,13 @@ void MainWindow::setupSettingsPage() {
     aboutLayout->setSpacing(12);
     aboutLayout->setContentsMargins(24, 24, 24, 24);
 
-    QLabel* aboutTitle = new QLabel("О приложении");
+    QLabel* aboutTitle = new QLabel("About");
     aboutTitle->setObjectName("settingsCardTitle");
     aboutLayout->addWidget(aboutTitle);
 
     QLabel* aboutText = new QLabel(
         "MarketPlace v1.0\n"
-        "Современный маркетплейс на Qt Widgets\n"
+        "Modern marketplace built with Qt Widgets\n"
         "C++17"
     );
     aboutText->setObjectName("settingsDescription");
@@ -536,10 +558,13 @@ void MainWindow::setupSettingsPage() {
 }
 
 void MainWindow::syncThemeComboBox() {
-    if (!m_themeComboBox) return;
+    if (!m_themeComboBox) {
+        return;
+    }
 
-    ThemeType current = ThemeManager::instance().currentTheme();
-    int index = m_themeComboBox->findData(static_cast<int>(current));
+    const ThemeType current = ThemeManager::instance().currentTheme();
+    const int index = m_themeComboBox->findData(static_cast<int>(current));
+    
     if (index >= 0) {
         m_themeComboBox->blockSignals(true);
         m_themeComboBox->setCurrentIndex(index);
@@ -548,10 +573,12 @@ void MainWindow::syncThemeComboBox() {
 }
 
 void MainWindow::onThemeChanged(int index) {
-    if (!m_themeComboBox) return;
+    if (!m_themeComboBox) {
+        return;
+    }
 
-    int themeValue = m_themeComboBox->itemData(index).toInt();
-    ThemeType theme = static_cast<ThemeType>(themeValue);
+    const int themeValue = m_themeComboBox->itemData(index).toInt();
+    const ThemeType theme = static_cast<ThemeType>(themeValue);
     ThemeManager::instance().applyTheme(theme);
 }
 
@@ -571,15 +598,24 @@ void MainWindow::onLoginSuccess(User* user) {
 
     setupMainUI();
 
+    // Обновление виджетов новыми указателями на пользователя/корзину
+    if (m_cartWidget) {
+        m_cartWidget->setCart(m_cart);
+    }
+    
+    if (m_profileWidget) {
+        m_profileWidget->setUser(m_currentUser);
+    }
+
     if (m_currentUser) {
-        m_userLabel->setText(QString("Баланс: %1 ₽").arg(user->getBalance(), 0, 'f', 0));
+        m_userLabel->setText(QString("Balance: %1 $").arg(user->getBalance(), 0, 'f', 0));
     }
 
     showCatalog();
 }
 
 void MainWindow::onRegisterSuccess() {
-    QMessageBox::information(this, "Успех", "Регистрация завершена! Теперь вы можете войти.");
+    QMessageBox::information(this, "Success", "Registration complete! You can now sign in.");
     showLogin();
 }
 
@@ -628,7 +664,7 @@ void MainWindow::showAdmin() {
 }
 
 void MainWindow::onCategorySelected(const QString& category) {
-    if (category == "Все товары" || category.isEmpty()) {
+    if (category == "All Products" || category.isEmpty()) {
         displayProducts(m_database->getAllProducts());
     } else {
         displayProducts(m_database->getProductsByCategory(category.toStdString()));
@@ -636,7 +672,7 @@ void MainWindow::onCategorySelected(const QString& category) {
 }
 
 void MainWindow::onSearch() {
-    QString query = m_searchEdit->text().trimmed();
+    const QString query = m_searchEdit->text().trimmed();
     if (query.isEmpty()) {
         displayProducts(m_database->getAllProducts());
     } else {
@@ -645,44 +681,50 @@ void MainWindow::onSearch() {
 }
 
 void MainWindow::onAddToCart(const Product& product) {
-    if (!m_cart) return;
+    if (!m_cart) {
+        return;
+    }
 
     m_cart->addItem(product, 1);
     updateCartBadge();
 
     QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Добавлено");
-    msgBox.setText(QString("«%1» добавлен в корзину").arg(QString::fromStdString(product.getName())));
+    msgBox.setWindowTitle("Added");
+    msgBox.setText(QString("\"%1\" added to cart").arg(QString::fromStdString(product.getName())));
     msgBox.setIcon(QMessageBox::Information);
     msgBox.exec();
 }
 
 void MainWindow::onCheckout() {
-    if (!m_cart || !m_currentUser) return;
+    if (!m_cart || !m_currentUser) {
+        return;
+    }
 
-    double total = m_cart->getTotalPrice();
+    const double total = m_cart->getTotalPrice();
 
     if (m_currentUser->getBalance() < total) {
-        QMessageBox::warning(this, "Недостаточно средств",
-            QString("На вашем балансе недостаточно средств.\n\n"
-                    "Необходимо: %1 ₽\nВаш баланс: %2 ₽\n\n"
-                    "Пополните баланс в профиле.")
+        QMessageBox::warning(this, "Insufficient Funds",
+            QString("You don't have enough funds.\n\n"
+                    "Required: %1 $\nYour balance: %2 $\n\n"
+                    "Top up your balance in Profile.")
                 .arg(total, 0, 'f', 0)
                 .arg(m_currentUser->getBalance(), 0, 'f', 0));
         return;
     }
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this, "Оформление заказа",
-        QString("Итого к оплате: %1 ₽\n\nСписать с баланса?").arg(total, 0, 'f', 0),
-        QMessageBox::Yes | QMessageBox::No
+    const QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Checkout",
+        QString("Total: %1 $\n\nDeduct from balance?").arg(total, 0, 'f', 0),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
     );
 
     if (reply == QMessageBox::Yes) {
         m_currentUser->withdrawBalance(total);
         m_database->updateUser(*m_currentUser);
 
-        for (const auto& item : m_cart->getItems()) {
+        const auto items = m_cart->getItems();
+        for (const auto& item : items) {
             Product* p = m_database->getProductById(item.product.getId());
             if (p) {
                 p->decreaseStock(item.quantity);
@@ -692,10 +734,10 @@ void MainWindow::onCheckout() {
 
         m_cart->clear();
         updateCartBadge();
-        m_userLabel->setText(QString("Баланс: %1 ₽").arg(m_currentUser->getBalance(), 0, 'f', 0));
+        m_userLabel->setText(QString("Balance: %1 $").arg(m_currentUser->getBalance(), 0, 'f', 0));
 
-        QMessageBox::information(this, "Заказ оформлен",
-            "Ваш заказ успешно оформлен!\nОжидайте доставку.");
+        QMessageBox::information(this, "Order Placed",
+            "Your order has been placed successfully!\nExpect delivery soon.");
 
         showCatalog();
         refreshCatalog();
@@ -703,15 +745,17 @@ void MainWindow::onCheckout() {
 }
 
 void MainWindow::updateCartBadge() {
-    if (!m_cart || !m_cartBadge) return;
+    if (!m_cart || !m_cartBadge) {
+        return;
+    }
 
-    int count = m_cart->getTotalItemsCount();
+    const int count = m_cart->getTotalItemsCount();
     m_cartBadge->setText(QString::number(count));
     m_cartBadge->setVisible(count > 0);
 }
 
 void MainWindow::displayProducts(const std::vector<Product>& products) {
-    // Очищаем сетку
+    // Очистка сетки
     QLayoutItem* item;
     while ((item = m_productsGrid->takeAt(0)) != nullptr) {
         if (item->widget()) {
@@ -721,7 +765,7 @@ void MainWindow::displayProducts(const std::vector<Product>& products) {
     }
 
     if (products.empty()) {
-        QLabel* emptyLabel = new QLabel("Товары не найдены");
+        QLabel* emptyLabel = new QLabel("No products found");
         emptyLabel->setObjectName("emptyProductsLabel");
         emptyLabel->setAlignment(Qt::AlignCenter);
         m_productsGrid->addWidget(emptyLabel, 0, 0);
@@ -730,7 +774,7 @@ void MainWindow::displayProducts(const std::vector<Product>& products) {
 
     int col = 0;
     int row = 0;
-    int maxCols = 4;
+    const int maxCols = 4;
 
     for (const auto& product : products) {
         ProductCard* card = new ProductCard(product);
@@ -738,10 +782,10 @@ void MainWindow::displayProducts(const std::vector<Product>& products) {
 
         m_productsGrid->addWidget(card, row, col);
 
-        col++;
+        ++col;
         if (col >= maxCols) {
             col = 0;
-            row++;
+            ++row;
         }
     }
 }
@@ -751,7 +795,7 @@ void MainWindow::refreshCatalog() {
     if (m_categoryList && m_categoryList->currentItem()) {
         currentCategory = m_categoryList->currentItem()->text();
     }
-    onCategorySelected(currentCategory.isEmpty() ? "Все товары" : currentCategory);
+    onCategorySelected(currentCategory.isEmpty() ? "All Products" : currentCategory);
 }
 
 void MainWindow::logout() {
@@ -762,7 +806,7 @@ void MainWindow::logout() {
         m_cart = nullptr;
     }
 
-    // Удаляем все страницы кроме логина и регистрации
+    // Удаление всех страниц, кроме входа и регистрации
     while (m_stackedWidget->count() > 2) {
         QWidget* w = m_stackedWidget->widget(2);
         m_stackedWidget->removeWidget(w);

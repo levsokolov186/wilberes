@@ -69,7 +69,7 @@ private:
     AdminPanel* m_adminPanel;
     QWidget* m_settingsPage;
     
-    // Page wrappers for stack navigation
+    // Обертки страниц для навигации в стеке
     QWidget* m_cartPageWrapper;
     QWidget* m_profilePageWrapper;
     QWidget* m_settingsPageWrapper;
@@ -88,7 +88,7 @@ private:
     QPushButton* m_settingsButton;
     QLabel* m_userLabel;
 
-    // Sidebar buttons
+    // Кнопки боковой панели
     QPushButton* m_sidebarCatalogBtn;
     QPushButton* m_sidebarCartBtn;
     QPushButton* m_sidebarProfileBtn;
@@ -96,7 +96,7 @@ private:
     QPushButton* m_sidebarAdminBtn;
     QButtonGroup* m_sidebarButtonGroup;
 
-    // Settings page elements
+    // Элементы страницы настроек
     QComboBox* m_themeComboBox;
 };
 

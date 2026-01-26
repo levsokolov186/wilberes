@@ -4,8 +4,21 @@
 #include <QGraphicsDropShadowEffect>
 
 CartWidget::CartWidget(Cart* cart, QWidget *parent)
-    : QWidget(parent), m_cart(cart) {
+    : QWidget(parent)
+    , m_cart(cart)
+    , m_itemsLayout(nullptr)
+    , m_totalLabel(nullptr)
+    , m_discountLabel(nullptr)
+    , m_emptyLabel(nullptr)
+    , m_checkoutButton(nullptr)
+    , m_scrollArea(nullptr)
+{
     setupUI();
+}
+
+void CartWidget::setCart(Cart* cart) {
+    m_cart = cart;
+    updateCart();
 }
 
 void CartWidget::setupUI() {
@@ -14,11 +27,11 @@ void CartWidget::setupUI() {
     mainLayout->setContentsMargins(30, 30, 30, 30);
 
     // Заголовок
-    QLabel* titleLabel = new QLabel("🛒 Корзина");
+    QLabel* titleLabel = new QLabel("Shopping Cart");
     titleLabel->setObjectName("pageTitle");
     mainLayout->addWidget(titleLabel);
 
-    // Скролл область для товаров
+    // Область прокрутки для элементов
     m_scrollArea = new QScrollArea;
     m_scrollArea->setWidgetResizable(true);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -31,14 +44,14 @@ void CartWidget::setupUI() {
     m_scrollArea->setWidget(scrollContent);
     mainLayout->addWidget(m_scrollArea, 1);
 
-    // Пустая корзина
-    m_emptyLabel = new QLabel("Корзина пуста\n🛒\nДобавьте товары для оформления заказа");
+    // Метка пустой корзины
+    m_emptyLabel = new QLabel("Your cart is empty\n\nAdd items to place an order");
     m_emptyLabel->setAlignment(Qt::AlignCenter);
     m_emptyLabel->setObjectName("subtitleLabel");
     m_emptyLabel->setStyleSheet("font-size: 16px; padding: 40px;");
     mainLayout->addWidget(m_emptyLabel);
 
-    // Итого
+    // Контейнер итогов
     QWidget* totalContainer = new QWidget;
     totalContainer->setObjectName("card");
     totalContainer->setMaximumWidth(500);
@@ -56,13 +69,13 @@ void CartWidget::setupUI() {
     m_totalLabel->setObjectName("titleLabel");
     totalLayout->addWidget(m_totalLabel);
 
-    // Кнопка оформления
-    m_checkoutButton = new QPushButton("Оформить заказ");
+    // Кнопка оформления заказа
+    m_checkoutButton = new QPushButton("Checkout");
     m_checkoutButton->setObjectName("primaryButton");
     m_checkoutButton->setCursor(Qt::PointingHandCursor);
     totalLayout->addWidget(m_checkoutButton);
 
-    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect;
+    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(totalContainer);
     shadow->setBlurRadius(20);
     shadow->setColor(QColor(0, 0, 0, 30));
     shadow->setOffset(0, 5);
@@ -83,20 +96,24 @@ QWidget* CartWidget::createCartItemWidget(const CartItem& item) {
     layout->setSpacing(15);
     layout->setContentsMargins(15, 15, 15, 15);
 
-    // Эмодзи товара
+    // Плейсхолдер иконки товара
     QLabel* imageLabel = new QLabel;
     imageLabel->setFixedSize(60, 60);
     imageLabel->setAlignment(Qt::AlignCenter);
-    QString emoji = "📦";
-    if (item.product.getCategory() == "Электроника") emoji = "📱";
-    else if (item.product.getCategory() == "Одежда") emoji = "👕";
-    else if (item.product.getCategory() == "Обувь") emoji = "👟";
-    imageLabel->setText(emoji);
+    
+    // Используем текстовую иконку на основе категории вместо эмодзи
+    QString iconText = "[P]";
+    const std::string& category = item.product.getCategory();
+    if (category == "Electronics") iconText = "[E]";
+    else if (category == "Clothing") iconText = "[C]";
+    else if (category == "Footwear") iconText = "[F]";
+    
+    imageLabel->setText(iconText);
     imageLabel->setObjectName("imageContainer");
-    imageLabel->setStyleSheet("font-size: 30px;");
+    imageLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #888;");
     layout->addWidget(imageLabel);
 
-    // Информация
+    // Информация о товаре
     QVBoxLayout* infoLayout = new QVBoxLayout;
 
     QLabel* nameLabel = new QLabel(QString::fromStdString(item.product.getName()));
@@ -104,33 +121,35 @@ QWidget* CartWidget::createCartItemWidget(const CartItem& item) {
     nameLabel->setWordWrap(true);
     infoLayout->addWidget(nameLabel);
 
-    QLabel* priceLabel = new QLabel(QString("%1 ₽").arg(
+    QLabel* priceLabel = new QLabel(QString("%1 $").arg(
         static_cast<int>(item.product.getPrice())));
     priceLabel->setObjectName("priceLabel");
     infoLayout->addWidget(priceLabel);
 
     layout->addLayout(infoLayout, 1);
 
-    // Количество
+    // Элементы управления количеством
     QVBoxLayout* qtyLayout = new QVBoxLayout;
     qtyLayout->setAlignment(Qt::AlignCenter);
 
     QSpinBox* qtySpinBox = new QSpinBox;
-    qtySpinBox->setRange(1, item.product.getStock());
+    qtySpinBox->setRange(1, std::max(1, item.product.getStock()));
     qtySpinBox->setValue(item.quantity);
     qtySpinBox->setMinimumWidth(70);
 
-    int productId = item.product.getId();
+    const int productId = item.product.getId();
     connect(qtySpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
-            [this, productId](int value) {
-                m_cart->updateQuantity(productId, value);
-                updateCart();
-                emit cartUpdated();
+            this, [this, productId](int value) {
+                if (m_cart) {
+                    m_cart->updateQuantity(productId, value);
+                    updateCart();
+                    emit cartUpdated();
+                }
             });
     qtyLayout->addWidget(qtySpinBox);
 
-    // Итого за позицию
-    QLabel* totalLabel = new QLabel(QString("%1 ₽").arg(
+    // Общая цена элемента
+    QLabel* totalLabel = new QLabel(QString("%1 $").arg(
         static_cast<int>(item.getTotalPrice())));
     totalLabel->setObjectName("subtitleLabel");
     qtyLayout->addWidget(totalLabel);
@@ -138,7 +157,7 @@ QWidget* CartWidget::createCartItemWidget(const CartItem& item) {
     layout->addLayout(qtyLayout);
 
     // Кнопка удаления
-    QPushButton* removeBtn = new QPushButton("✕");
+    QPushButton* removeBtn = new QPushButton("X");
     removeBtn->setObjectName("removeButton");
     removeBtn->setFixedSize(30, 30);
     removeBtn->setCursor(Qt::PointingHandCursor);
@@ -148,7 +167,7 @@ QWidget* CartWidget::createCartItemWidget(const CartItem& item) {
             color: #e74c3c;
             border: none;
             border-radius: 15px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
         }
         QPushButton:hover {
@@ -157,14 +176,16 @@ QWidget* CartWidget::createCartItemWidget(const CartItem& item) {
         }
     )");
 
-    connect(removeBtn, &QPushButton::clicked, [this, productId]() {
-        m_cart->removeItem(productId);
-        updateCart();
-        emit cartUpdated();
+    connect(removeBtn, &QPushButton::clicked, this, [this, productId]() {
+        if (m_cart) {
+            m_cart->removeItem(productId);
+            updateCart();
+            emit cartUpdated();
+        }
     });
     layout->addWidget(removeBtn);
 
-    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect;
+    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(widget);
     shadow->setBlurRadius(10);
     shadow->setColor(QColor(0, 0, 0, 20));
     shadow->setOffset(0, 3);
@@ -174,34 +195,37 @@ QWidget* CartWidget::createCartItemWidget(const CartItem& item) {
 }
 
 void CartWidget::updateCart() {
-    // Очищаем старые элементы
+    // Очистка старых элементов
     QLayoutItem* child;
     while ((child = m_itemsLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
+        if (child->widget()) {
+            child->widget()->deleteLater();
+        }
         delete child;
     }
 
-    bool isEmpty = !m_cart || m_cart->isEmpty();
+    const bool isEmpty = !m_cart || m_cart->isEmpty();
     m_emptyLabel->setVisible(isEmpty);
     m_scrollArea->setVisible(!isEmpty);
 
     if (!isEmpty) {
-        for (const auto& item : m_cart->getItems()) {
+        const auto items = m_cart->getItems();
+        for (const auto& item : items) {
             m_itemsLayout->addWidget(createCartItemWidget(item));
         }
     }
 
-    // Обновляем итого
-    double total = m_cart ? m_cart->getTotalPrice() : 0;
-    double discount = m_cart ? m_cart->getTotalDiscount() : 0;
+    // Обновление итогов
+    const double total = m_cart ? m_cart->getTotalPrice() : 0.0;
+    const double discount = m_cart ? m_cart->getTotalDiscount() : 0.0;
 
     if (discount > 0) {
-        m_discountLabel->setText(QString("Скидка: -%1 ₽").arg(static_cast<int>(discount)));
+        m_discountLabel->setText(QString("Discount: -%1 $").arg(static_cast<int>(discount)));
         m_discountLabel->show();
     } else {
         m_discountLabel->hide();
     }
 
-    m_totalLabel->setText(QString("Итого: %1 ₽").arg(static_cast<int>(total)));
+    m_totalLabel->setText(QString("Total: %1 $").arg(static_cast<int>(total)));
     m_checkoutButton->setEnabled(!isEmpty);
 }

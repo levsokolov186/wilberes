@@ -26,6 +26,7 @@ private:
     void setupUI();
     void applyStyles();
     bool validateInput();
+    void clearForm();
 
     Database* m_database;
     QLineEdit* m_usernameEdit;

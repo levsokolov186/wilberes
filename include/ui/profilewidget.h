@@ -13,7 +13,11 @@ class ProfileWidget : public QWidget {
 
 public:
     explicit ProfileWidget(User* user, Database* db, QWidget *parent = nullptr);
+    
+    void setUser(User* user);
     void updateProfile();
+    
+    User* getUser() const noexcept { return m_user; }
 
 signals:
     void balanceChanged();

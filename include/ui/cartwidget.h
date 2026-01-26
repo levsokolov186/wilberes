@@ -13,7 +13,11 @@ class CartWidget : public QWidget {
 
 public:
     explicit CartWidget(Cart* cart, QWidget *parent = nullptr);
+    
+    void setCart(Cart* cart);
     void updateCart();
+    
+    Cart* getCart() const noexcept { return m_cart; }
 
 signals:
     void checkoutClicked();
