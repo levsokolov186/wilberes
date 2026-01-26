@@ -1,8 +1,5 @@
 # === Build directories ===
 build/
-debug/
-release/
-bin/
 obj/
 
 # === Qt specific ===
@@ -49,10 +46,8 @@ CMakeLists.txt.user.*
 *.la
 
 # === Executables ===
-*.exe
 *.out
 *.app
-wild
 
 # === Debug files ===
 *.dSYM/
@@ -115,5 +110,3 @@ $RECYCLE.BIN/
 *.bak
 *.swp
 *.orig
-core
-core.*
