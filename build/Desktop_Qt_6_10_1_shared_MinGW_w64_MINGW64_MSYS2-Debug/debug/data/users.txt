@@ -1,0 +1,2 @@
+1|Egor|Game1234|example@gmail.com|||7132|1
+2|Egor1|12345678|asd@gmail.com|||39906|1
