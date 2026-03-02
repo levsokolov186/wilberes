@@ -10,7 +10,9 @@
 enum class ThemeType {
     Light,
     Dark,
-    Wildberries
+    Wildberries,
+    Glass,
+    Modern
 };
 
 /**

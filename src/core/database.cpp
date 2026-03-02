@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "database.h"
 #include <fstream>
 #include <algorithm>
@@ -11,8 +12,8 @@ Database::Database(const std::string& dataPath)
     , m_nextUserId(1)
     , m_nextProductId(1)
     , m_dirty(false)
+    , m_categoriesDirty(true)
 {
-    // Создание директории данных, если она не существует
     std::filesystem::create_directories(dataPath);
 
     loadUsers();
@@ -21,6 +22,8 @@ Database::Database(const std::string& dataPath)
     if (m_products.empty()) {
         initDefaultProducts();
     }
+    
+    m_categoriesCache.reserve(16);
 }
 
 Database::~Database() {
@@ -34,6 +37,8 @@ Database::Database(Database&& other) noexcept
     , m_usernameIndex(std::move(other.m_usernameIndex))
     , m_productIdIndex(std::move(other.m_productIdIndex))
     , m_emails(std::move(other.m_emails))
+    , m_categoriesCache(std::move(other.m_categoriesCache))
+    , m_categoriesDirty(other.m_categoriesDirty)
     , m_dataPath(std::move(other.m_dataPath))
     , m_nextUserId(other.m_nextUserId)
     , m_nextProductId(other.m_nextProductId)
@@ -42,11 +47,12 @@ Database::Database(Database&& other) noexcept
     other.m_nextUserId = 1;
     other.m_nextProductId = 1;
     other.m_dirty = false;
+    other.m_categoriesDirty = true;
 }
 
 Database& Database::operator=(Database&& other) noexcept {
     if (this != &other) {
-        flush(); // Сохранение текущего состояния перед перемещением
+        flush();
         
         m_users = std::move(other.m_users);
         m_products = std::move(other.m_products);
@@ -54,6 +60,8 @@ Database& Database::operator=(Database&& other) noexcept {
         m_usernameIndex = std::move(other.m_usernameIndex);
         m_productIdIndex = std::move(other.m_productIdIndex);
         m_emails = std::move(other.m_emails);
+        m_categoriesCache = std::move(other.m_categoriesCache);
+        m_categoriesDirty = other.m_categoriesDirty;
         m_dataPath = std::move(other.m_dataPath);
         m_nextUserId = other.m_nextUserId;
         m_nextProductId = other.m_nextProductId;
@@ -62,6 +70,7 @@ Database& Database::operator=(Database&& other) noexcept {
         other.m_nextUserId = 1;
         other.m_nextProductId = 1;
         other.m_dirty = false;
+        other.m_categoriesDirty = true;
     }
     return *this;
 }
@@ -307,6 +316,7 @@ void Database::initDefaultProducts() {
     }
 
     rebuildProductIndices();
+    m_categoriesDirty = true;
     m_dirty = true;
     saveProducts();
 }
@@ -491,6 +501,7 @@ bool Database::addProduct(const Product& product) {
     m_productIdIndex[newProduct.getId()] = index;
     m_products.push_back(std::move(newProduct));
     
+    m_categoriesDirty = true;
     m_dirty = true;
     return saveProducts();
 }
@@ -502,6 +513,7 @@ bool Database::addProduct(Product&& product) {
     m_productIdIndex[product.getId()] = index;
     m_products.push_back(std::move(product));
     
+    m_categoriesDirty = true;
     m_dirty = true;
     return saveProducts();
 }
@@ -521,12 +533,11 @@ bool Database::deleteProduct(int id) {
     if (it != m_productIdIndex.end() && it->second < m_products.size()) {
         std::size_t index = it->second;
         
-        // Удаление из вектора
         m_products.erase(m_products.begin() + static_cast<std::ptrdiff_t>(index));
         
-        // Перестройка индексов (необходимо, так как индексы смещаются после удаления)
         rebuildProductIndices();
         
+        m_categoriesDirty = true;
         m_dirty = true;
         return saveProducts();
     }
@@ -534,17 +545,26 @@ bool Database::deleteProduct(int id) {
 }
 
 std::vector<std::string> Database::getCategories() const {
+    if (!m_categoriesDirty && !m_categoriesCache.empty()) {
+        return m_categoriesCache;
+    }
+    
     std::unordered_set<std::string> categorySet;
-    categorySet.reserve(10);
+    categorySet.reserve(16);
     
     for (const auto& product : m_products) {
         categorySet.insert(product.getCategory());
     }
     
-    std::vector<std::string> categories(categorySet.begin(), categorySet.end());
-    std::sort(categories.begin(), categories.end());
+    m_categoriesCache.assign(categorySet.begin(), categorySet.end());
+    std::sort(m_categoriesCache.begin(), m_categoriesCache.end());
+    m_categoriesDirty = false;
     
-    return categories;
+    return m_categoriesCache;
+}
+
+void Database::invalidateCategoriesCache() noexcept {
+    m_categoriesDirty = true;
 }
 
 bool Database::isValidAdminCode(const std::string& code) noexcept {

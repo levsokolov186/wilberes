@@ -4,6 +4,34 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
+# === Профили сборки ===
+# Debug: отладочная сборка с информацией для отладчика
+CONFIG(debug, debug|release) {
+    DEFINES += QT_DEBUG
+}
+# Release: оптимизированная сборка
+CONFIG(release, debug|release) {
+    # Оптимизация по скорости (-O3)
+    QMAKE_CXXFLAGS_RELEASE -= -O2
+    QMAKE_CXXFLAGS_RELEASE += -O3
+    # LTO для лучшей оптимизации между файлами
+    QMAKE_CXXFLAGS_RELEASE += -flto
+    QMAKE_LFLAGS_RELEASE += -flto
+    # Убираем отладочную информацию для уменьшения размера
+    QMAKE_CXXFLAGS_RELEASE += -s
+    # Оптимизация размера
+    QMAKE_CXXFLAGS_RELEASE += -ffunction-sections -fdata-sections
+    QMAKE_LFLAGS_RELEASE += -Wl,--gc-sections
+}
+
+# === Предкомпилированные заголовки ===
+CONFIG += precompile_header
+PRECOMPILED_HEADER = include/pch.h
+
+# === Дополнительные настройки ===
+# Убрать предупреждения о неиспользуемых параметрах
+CONFIG += warn_off
+
 # Пути для подключения заголовков
 INCLUDEPATH += \
     include \
@@ -28,16 +56,16 @@ SOURCES += \
     src/models/user.cpp \
     # Интерфейс
     src/ui/adminpanel.cpp \
+    src/ui/authwindow.cpp \
     src/ui/cartwidget.cpp \
-    src/ui/loginwindow.cpp \
     src/ui/mainwindow.cpp \
     src/ui/productcard.cpp \
-    src/ui/profilewidget.cpp \
-    src/ui/registerwindow.cpp
+    src/ui/profilewidget.cpp
 
 # === Заголовочные файлы ===
 
 HEADERS += \
+    include/pch.h \
     # Ядро
     include/core/database.h \
     include/core/theme_manager.h \
@@ -47,12 +75,11 @@ HEADERS += \
     include/models/user.h \
     # Интерфейс
     include/ui/adminpanel.h \
+    include/ui/authwindow.h \
     include/ui/cartwidget.h \
-    include/ui/loginwindow.h \
     include/ui/mainwindow.h \
     include/ui/productcard.h \
-    include/ui/profilewidget.h \
-    include/ui/registerwindow.h
+    include/ui/profilewidget.h
 
 # === Формы интерфейса ===
 

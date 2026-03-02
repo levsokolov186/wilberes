@@ -1,0 +1,100 @@
+#ifndef PCH_H
+#define PCH_H
+
+// Qt Core
+#include <QCoreApplication>
+#include <QApplication>
+#include <QDebug>
+#include <QString>
+#include <QStringList>
+#include <QVector>
+#include <QList>
+#include <QMap>
+#include <QHash>
+#include <QSet>
+#include <QPair>
+#include <QTimer>
+#include <QFile>
+#include <QFileDialog>
+#include <QDir>
+#include <QDataStream>
+#include <QSettings>
+
+// Qt GUI
+#include <QWidget>
+#include <QLabel>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QListWidget>
+#include <QTableWidget>
+#include <QTreeWidget>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QCheckBox>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QFrame>
+#include <QTabWidget>
+#include <QStackedWidget>
+#include <QScrollArea>
+#include <QSplitter>
+#include <QGridLayout>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QFormLayout>
+#include <QLayout>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QFont>
+#include <QFontDatabase>
+#include <QColor>
+#include <QPalette>
+#include <QStyleFactory>
+#include <QCursor>
+#include <QIcon>
+#include <QPixmap>
+#include <QImage>
+#include <QPicture>
+#include <QPainter>
+#include <QPen>
+#include <QBrush>
+#include <QGraphicsDropShadowEffect>
+
+// Qt Windows
+#include <QMainWindow>
+#include <QDialog>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QToolBar>
+#include <QStatusBar>
+#include <QDockWidget>
+
+// STL
+#include <vector>
+#include <string>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+#include <set>
+#include <list>
+#include <queue>
+#include <stack>
+#include <algorithm>
+#include <memory>
+#include <functional>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <chrono>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <cassert>
+#include <cmath>
+#include <cctype>
+
+#endif // PCH_H

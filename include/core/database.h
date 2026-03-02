@@ -20,6 +20,10 @@ private:
     std::unordered_map<int, std::size_t> m_productIdIndex;
     std::unordered_set<std::string> m_emails;
     
+    // Кеш категорий
+    mutable std::vector<std::string> m_categoriesCache;
+    mutable bool m_categoriesDirty;
+    
     std::string m_dataPath;
     int m_nextUserId;
     int m_nextProductId;
@@ -79,6 +83,8 @@ public:
     bool deleteProduct(int id);
     std::vector<std::string> getCategories() const;
     std::size_t getProductCount() const noexcept { return m_products.size(); }
+
+    void invalidateCategoriesCache() noexcept;
 
     // Валидация администраторского кода
     static bool isValidAdminCode(const std::string& code) noexcept;

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "theme_manager.h"
 
 #include <QApplication>
@@ -35,6 +36,12 @@ void ThemeManager::applyTheme(ThemeType type)
         break;
     case ThemeType::Wildberries:
         qssPath = ":/styles/style_wb.qss";
+        break;
+    case ThemeType::Glass:
+        qssPath = ":/styles/style_glass.qss";
+        break;
+    case ThemeType::Modern:
+        qssPath = ":/styles/style_modern.qss";
         break;
     }
 
@@ -80,6 +87,10 @@ QString ThemeManager::themeDisplayName(ThemeType type)
         return QObject::tr("Тёмная");
     case ThemeType::Wildberries:
         return QObject::tr("Wildberries");
+    case ThemeType::Glass:
+        return QObject::tr("Стекло");
+    case ThemeType::Modern:
+        return QObject::tr("Современная");
     }
     return QString();
 }
@@ -93,6 +104,10 @@ QString ThemeManager::themeToString(ThemeType type)
         return "dark";
     case ThemeType::Wildberries:
         return "wildberries";
+    case ThemeType::Glass:
+        return "glass";
+    case ThemeType::Modern:
+        return "modern";
     }
     return "wildberries";
 }
@@ -103,6 +118,10 @@ ThemeType ThemeManager::stringToTheme(const QString& str)
         return ThemeType::Light;
     } else if (str == "dark") {
         return ThemeType::Dark;
+    } else if (str == "glass") {
+        return ThemeType::Glass;
+    } else if (str == "modern") {
+        return ThemeType::Modern;
     }
     return ThemeType::Wildberries;
 }
@@ -196,6 +215,50 @@ void ThemeManager::setupPalette(ThemeType type)
         palette.setColor(QPalette::Disabled, QPalette::Text, QColor("#b0b0b0"));
         palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#b0b0b0"));
         palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor("#b0b0b0"));
+        break;
+
+    case ThemeType::Glass:
+        // Тема Glass - полупрозрачный стиль с градиентом, фиолетовые акценты
+        palette.setColor(QPalette::Window, QColor(102, 126, 234));
+        palette.setColor(QPalette::WindowText, QColor("#ffffff"));
+        palette.setColor(QPalette::Base, QColor(255, 255, 255, 30));
+        palette.setColor(QPalette::AlternateBase, QColor(255, 255, 255, 20));
+        palette.setColor(QPalette::Text, QColor("#ffffff"));
+        palette.setColor(QPalette::Button, QColor(255, 255, 255, 40));
+        palette.setColor(QPalette::ButtonText, QColor("#ffffff"));
+        palette.setColor(QPalette::Highlight, QColor("#6c5ce7"));
+        palette.setColor(QPalette::HighlightedText, QColor("#ffffff"));
+        palette.setColor(QPalette::ToolTipBase, QColor(45, 45, 80, 242));
+        palette.setColor(QPalette::ToolTipText, QColor("#ffffff"));
+        palette.setColor(QPalette::Link, QColor("#a29bfe"));
+        palette.setColor(QPalette::PlaceholderText, QColor(255, 255, 255, 128));
+        
+        // Disabled состояния
+        palette.setColor(QPalette::Disabled, QPalette::Text, QColor(255, 255, 255, 102));
+        palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(255, 255, 255, 102));
+        palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(255, 255, 255, 102));
+        break;
+
+    case ThemeType::Modern:
+        // Современная тёмная тема с фиолетовыми акцентами
+        palette.setColor(QPalette::Window, QColor("#0f0f23"));
+        palette.setColor(QPalette::WindowText, QColor("#e0e0e0"));
+        palette.setColor(QPalette::Base, QColor("#1a1a2e"));
+        palette.setColor(QPalette::AlternateBase, QColor("#12121f"));
+        palette.setColor(QPalette::Text, QColor("#e0e0e0"));
+        palette.setColor(QPalette::Button, QColor("#252540"));
+        palette.setColor(QPalette::ButtonText, QColor("#ffffff"));
+        palette.setColor(QPalette::Highlight, QColor("#764ba2"));
+        palette.setColor(QPalette::HighlightedText, QColor("#ffffff"));
+        palette.setColor(QPalette::ToolTipBase, QColor("#1a1a2e"));
+        palette.setColor(QPalette::ToolTipText, QColor("#ffffff"));
+        palette.setColor(QPalette::Link, QColor("#667eea"));
+        palette.setColor(QPalette::PlaceholderText, QColor("#666688"));
+        
+        // Disabled состояния
+        palette.setColor(QPalette::Disabled, QPalette::Text, QColor("#666688"));
+        palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#666688"));
+        palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor("#666688"));
         break;
     }
 

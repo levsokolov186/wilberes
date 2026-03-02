@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "productcard.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -21,29 +22,26 @@ ProductCard::ProductCard(const Product& product, QWidget *parent)
 }
 
 void ProductCard::setupUI() {
-    setFixedSize(220, 320);
+    setFixedSize(240, 340);
     setObjectName("productCard");
     setCursor(Qt::PointingHandCursor);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setSpacing(8);
-    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(10);
+    layout->setContentsMargins(14, 14, 14, 14);
 
-    // Контейнер изображения
     QWidget* imageContainer = new QWidget;
-    imageContainer->setFixedHeight(150);
+    imageContainer->setFixedHeight(160);
     imageContainer->setObjectName("imageContainer");
 
     QVBoxLayout* imageLayout = new QVBoxLayout(imageContainer);
     imageLayout->setContentsMargins(0, 0, 0, 0);
 
-    // Плейсхолдер изображения (текстовая иконка категории)
     m_imageLabel = new QLabel;
     m_imageLabel->setAlignment(Qt::AlignCenter);
     m_imageLabel->setObjectName("productImage");
 
-    // Выбор иконки на основе категории
-    QString iconText = "[P]";  // По умолчанию: Товар
+    QString iconText = "[P]";
     const std::string& category = m_product.getCategory();
     
     if (category == "Electronics") {
@@ -65,36 +63,32 @@ void ProductCard::setupUI() {
     }
     
     m_imageLabel->setText(iconText);
-    m_imageLabel->setStyleSheet("font-size: 32px; font-weight: bold; color: #888;");
+    m_imageLabel->setStyleSheet("font-size: 40px; font-weight: bold; color: #9ca3af;");
     imageLayout->addWidget(m_imageLabel);
 
-    // Значок скидки
     if (m_product.getDiscount() > 0) {
         m_discountLabel = new QLabel(QString("-%1%").arg(m_product.getDiscount()));
         m_discountLabel->setObjectName("discountBadge");
-        m_discountLabel->setFixedSize(45, 22);
+        m_discountLabel->setFixedSize(50, 24);
         m_discountLabel->setAlignment(Qt::AlignCenter);
-        m_discountLabel->move(8, 8);
+        m_discountLabel->move(10, 10);
         m_discountLabel->setParent(imageContainer);
     }
 
     layout->addWidget(imageContainer);
 
-    // Бренд
     m_brandLabel = new QLabel(QString::fromStdString(m_product.getBrand()));
     m_brandLabel->setObjectName("brandLabel");
     layout->addWidget(m_brandLabel);
 
-    // Название
     m_nameLabel = new QLabel(QString::fromStdString(m_product.getName()));
     m_nameLabel->setObjectName("nameLabel");
     m_nameLabel->setWordWrap(true);
-    m_nameLabel->setMaximumHeight(36);
+    m_nameLabel->setMaximumHeight(40);
     layout->addWidget(m_nameLabel);
 
-    // Рейтинг
     QHBoxLayout* ratingLayout = new QHBoxLayout;
-    ratingLayout->setSpacing(4);
+    ratingLayout->setSpacing(6);
     ratingLayout->setContentsMargins(0, 0, 0, 0);
 
     m_ratingLabel = new QLabel(QString("* %1 (%2)")
@@ -105,9 +99,8 @@ void ProductCard::setupUI() {
     ratingLayout->addStretch();
     layout->addLayout(ratingLayout);
 
-    // Цены
     QHBoxLayout* priceLayout = new QHBoxLayout;
-    priceLayout->setSpacing(8);
+    priceLayout->setSpacing(10);
     priceLayout->setContentsMargins(0, 0, 0, 0);
 
     m_priceLabel = new QLabel(QString("%1 $").arg(
@@ -125,21 +118,19 @@ void ProductCard::setupUI() {
     priceLayout->addStretch();
     layout->addLayout(priceLayout);
 
-    // Кнопка добавления в корзину
     m_addButton = new QPushButton("Add to Cart");
     m_addButton->setObjectName("addButton");
     m_addButton->setCursor(Qt::PointingHandCursor);
-    m_addButton->setFixedHeight(36);
+    m_addButton->setFixedHeight(42);
     layout->addWidget(m_addButton);
 
     connect(m_addButton, &QPushButton::clicked, this, [this]() {
         emit addToCartClicked(m_product);
     });
 
-    // Эффект тени для карточки - создание один раз и повторное использование
     m_shadowEffect = new QGraphicsDropShadowEffect(this);
     m_shadowEffect->setBlurRadius(15);
-    m_shadowEffect->setColor(QColor(0, 0, 0, 25));
+    m_shadowEffect->setColor(QColor(124, 58, 237, 30));
     m_shadowEffect->setOffset(0, 4);
     setGraphicsEffect(m_shadowEffect);
 }
@@ -176,20 +167,18 @@ void ProductCard::mousePressEvent(QMouseEvent *event) {
 }
 
 void ProductCard::enterEvent(QEnterEvent *event) {
-    // Повторное использование существующего эффекта тени - просто изменение свойств
     if (m_shadowEffect) {
-        m_shadowEffect->setBlurRadius(20);
-        m_shadowEffect->setColor(QColor(0, 0, 0, 50));
-        m_shadowEffect->setOffset(0, 6);
+        m_shadowEffect->setBlurRadius(25);
+        m_shadowEffect->setColor(QColor(124, 58, 237, 50));
+        m_shadowEffect->setOffset(0, 8);
     }
     QWidget::enterEvent(event);
 }
 
 void ProductCard::leaveEvent(QEvent *event) {
-    // Повторное использование существующего эффекта тени - восстановление исходных свойств
     if (m_shadowEffect) {
         m_shadowEffect->setBlurRadius(15);
-        m_shadowEffect->setColor(QColor(0, 0, 0, 25));
+        m_shadowEffect->setColor(QColor(124, 58, 237, 30));
         m_shadowEffect->setOffset(0, 4);
     }
     QWidget::leaveEvent(event);

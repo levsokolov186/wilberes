@@ -1,3 +1,4 @@
+#include "pch.h"
 #include <QApplication>
 #include <QFont>
 #include <QStyleFactory>

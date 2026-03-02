@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "profilewidget.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -29,54 +30,50 @@ void ProfileWidget::setUser(User* user) {
 
 void ProfileWidget::setupUI() {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(20);
-    mainLayout->setContentsMargins(40, 40, 40, 40);
+    mainLayout->setSpacing(24);
+    mainLayout->setContentsMargins(50, 50, 50, 50);
     mainLayout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
 
-    // Заголовок страницы
     QLabel* pageTitle = new QLabel("Profile");
     pageTitle->setObjectName("pageTitle");
     mainLayout->addWidget(pageTitle);
 
-    // Карточка профиля
     QWidget* profileCard = new QWidget;
     profileCard->setObjectName("card");
-    profileCard->setFixedWidth(500);
+    profileCard->setFixedWidth(520);
 
     QVBoxLayout* cardLayout = new QVBoxLayout(profileCard);
-    cardLayout->setSpacing(20);
-    cardLayout->setContentsMargins(30, 30, 30, 30);
+    cardLayout->setSpacing(24);
+    cardLayout->setContentsMargins(36, 36, 36, 36);
 
-    // Аватар и основная информация
     QHBoxLayout* headerLayout = new QHBoxLayout;
 
     m_avatarLabel = new QLabel("[U]");
     m_avatarLabel->setObjectName("avatarLabel");
-    m_avatarLabel->setFixedSize(100, 100);
+    m_avatarLabel->setFixedSize(110, 110);
     m_avatarLabel->setAlignment(Qt::AlignCenter);
-    m_avatarLabel->setStyleSheet("font-size: 40px; font-weight: bold; color: #888; "
-                                  "background: #f0f0f0; border-radius: 50px;");
+    m_avatarLabel->setStyleSheet("font-size: 42px; font-weight: bold; color: #7c3aed; "
+                                  "border: 3px solid #7c3aed;");
     headerLayout->addWidget(m_avatarLabel);
 
     QVBoxLayout* headerInfoLayout = new QVBoxLayout;
 
     m_roleLabel = new QLabel;
     m_roleLabel->setObjectName("subtitleLabel");
-    m_roleLabel->setStyleSheet("font-weight: bold;");
+    m_roleLabel->setStyleSheet("font-weight: 700; font-size: 16px; color: #7c3aed;");
     headerInfoLayout->addWidget(m_roleLabel);
 
     m_balanceLabel = new QLabel;
     m_balanceLabel->setObjectName("titleLabel");
-    m_balanceLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #27ae60;");
+    m_balanceLabel->setStyleSheet("font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #cb11ab 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;");
     headerInfoLayout->addWidget(m_balanceLabel);
 
     headerLayout->addLayout(headerInfoLayout);
     headerLayout->addStretch();
     cardLayout->addLayout(headerLayout);
 
-    // Форма профиля
     QFormLayout* formLayout = new QFormLayout;
-    formLayout->setSpacing(15);
+    formLayout->setSpacing(18);
 
     m_usernameEdit = new QLineEdit;
     m_usernameEdit->setReadOnly(true);
@@ -99,13 +96,13 @@ void ProfileWidget::setupUI() {
 
     cardLayout->addLayout(formLayout);
 
-    // Кнопка сохранения
     QPushButton* saveButton = new QPushButton("Save Changes");
     saveButton->setObjectName("primaryButton");
     saveButton->setCursor(Qt::PointingHandCursor);
+    saveButton->setMinimumHeight(48);
+    saveButton->setStyleSheet("font-size: 15px; font-weight: 600; border-radius: 12px;");
     cardLayout->addWidget(saveButton);
 
-    // Раздел пополнения баланса
     QGroupBox* balanceGroup = new QGroupBox("Add Funds");
     balanceGroup->setObjectName("balanceGroup");
 
@@ -119,34 +116,30 @@ void ProfileWidget::setupUI() {
     QPushButton* addBalanceBtn = new QPushButton("Add");
     addBalanceBtn->setObjectName("primaryButton");
     addBalanceBtn->setCursor(Qt::PointingHandCursor);
-    addBalanceBtn->setStyleSheet("background: #27ae60;");
+    addBalanceBtn->setStyleSheet("background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px;");
     balanceLayout->addWidget(addBalanceBtn);
 
     cardLayout->addWidget(balanceGroup);
 
-    // Кнопка выхода
     QPushButton* logoutButton = new QPushButton("Sign Out");
     logoutButton->setObjectName("secondaryButton");
     logoutButton->setCursor(Qt::PointingHandCursor);
-    logoutButton->setStyleSheet("color: #e74c3c; border-color: #e74c3c;");
+    logoutButton->setStyleSheet("color: #ef4444; border-color: #ef4444; border-radius: 12px;");
     cardLayout->addWidget(logoutButton);
 
-    // Эффект тени для карточки
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(profileCard);
     shadow->setBlurRadius(30);
-    shadow->setColor(QColor(0, 0, 0, 40));
+    shadow->setColor(QColor(124, 58, 237, 40));
     shadow->setOffset(0, 10);
     profileCard->setGraphicsEffect(shadow);
 
     mainLayout->addWidget(profileCard);
     mainLayout->addStretch();
 
-    // Соединение сигналов
     connect(saveButton, &QPushButton::clicked, this, &ProfileWidget::onSaveClicked);
     connect(addBalanceBtn, &QPushButton::clicked, this, &ProfileWidget::onAddBalanceClicked);
     connect(logoutButton, &QPushButton::clicked, this, &ProfileWidget::logoutClicked);
     
-    // Позволить клавише Enter запускать пополнение баланса
     connect(m_addBalanceEdit, &QLineEdit::returnPressed, this, &ProfileWidget::onAddBalanceClicked);
 }
 

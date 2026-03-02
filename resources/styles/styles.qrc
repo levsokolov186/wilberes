@@ -4,5 +4,7 @@
         <file>style_light.qss</file>
         <file>style_dark.qss</file>
         <file>style_wb.qss</file>
+        <file>style_glass.qss</file>
+        <file>style_modern.qss</file>
     </qresource>
 </RCC>

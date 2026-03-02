@@ -13,8 +13,7 @@
 #include <QButtonGroup>
 #include "database.h"
 #include "cart.h"
-#include "loginwindow.h"
-#include "registerwindow.h"
+#include "authwindow.h"
 #include "cartwidget.h"
 #include "adminpanel.h"
 #include "profilewidget.h"
@@ -54,6 +53,9 @@ private:
     void displayProducts(const std::vector<Product>& products);
     void updateSidebarActiveButton(QPushButton* activeBtn);
     void syncThemeComboBox();
+    QWidget* createSidebar();
+    QWidget* createHeader();
+    QWidget* createPageWrapper(const QString& title, QWidget* content);
 
     Database* m_database;
     User* m_currentUser;
@@ -61,8 +63,7 @@ private:
 
     // Страницы
     QStackedWidget* m_stackedWidget;
-    LoginWindow* m_loginWindow;
-    RegisterWindow* m_registerWindow;
+    AuthWindow* m_authWindow;
     QWidget* m_mainPage;
     CartWidget* m_cartWidget;
     ProfileWidget* m_profileWidget;

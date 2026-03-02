@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "adminpanel.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -29,10 +30,9 @@ AdminPanel::AdminPanel(Database* db, QWidget *parent)
 
 void AdminPanel::setupUI() {
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
-    mainLayout->setSpacing(20);
-    mainLayout->setContentsMargins(30, 30, 30, 30);
+    mainLayout->setSpacing(24);
+    mainLayout->setContentsMargins(36, 36, 36, 36);
 
-    // Левая панель - таблица
     QVBoxLayout* leftLayout = new QVBoxLayout;
 
     QLabel* titleLabel = new QLabel("Admin Panel");
@@ -52,16 +52,16 @@ void AdminPanel::setupUI() {
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->setAlternatingRowColors(true);
     m_table->verticalHeader()->setVisible(false);
+    m_table->setStyleSheet("border-radius: 12px;");
     leftLayout->addWidget(m_table);
 
     mainLayout->addLayout(leftLayout, 2);
 
-    // Правая панель - форма
     QGroupBox* formGroup = new QGroupBox("Product Details");
     formGroup->setObjectName("formGroup");
 
     QFormLayout* formLayout = new QFormLayout(formGroup);
-    formLayout->setSpacing(15);
+    formLayout->setSpacing(18);
 
     m_nameEdit = new QLineEdit;
     m_nameEdit->setPlaceholderText("Product name");
@@ -108,31 +108,30 @@ void AdminPanel::setupUI() {
     m_discountSpin->setObjectName("discountSpin");
     formLayout->addRow("Discount:", m_discountSpin);
 
-    // Кнопки действий
     QHBoxLayout* btnLayout = new QHBoxLayout;
-    btnLayout->setSpacing(10);
+    btnLayout->setSpacing(12);
 
     m_addButton = new QPushButton("Add");
     m_addButton->setObjectName("primaryButton");
     m_addButton->setCursor(Qt::PointingHandCursor);
-    m_addButton->setStyleSheet("background: #27ae60;");
-    m_addButton->setMinimumHeight(36);
+    m_addButton->setStyleSheet("background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px;");
+    m_addButton->setMinimumHeight(42);
     btnLayout->addWidget(m_addButton);
 
     m_editButton = new QPushButton("Update");
     m_editButton->setObjectName("primaryButton");
     m_editButton->setEnabled(false);
     m_editButton->setCursor(Qt::PointingHandCursor);
-    m_editButton->setStyleSheet("background: #3498db;");
-    m_editButton->setMinimumHeight(36);
+    m_editButton->setStyleSheet("background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 10px;");
+    m_editButton->setMinimumHeight(42);
     btnLayout->addWidget(m_editButton);
 
     m_deleteButton = new QPushButton("Delete");
     m_deleteButton->setObjectName("primaryButton");
     m_deleteButton->setEnabled(false);
     m_deleteButton->setCursor(Qt::PointingHandCursor);
-    m_deleteButton->setStyleSheet("background: #e74c3c;");
-    m_deleteButton->setMinimumHeight(36);
+    m_deleteButton->setStyleSheet("background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 10px;");
+    m_deleteButton->setMinimumHeight(42);
     btnLayout->addWidget(m_deleteButton);
 
     formLayout->addRow(btnLayout);
@@ -140,12 +139,11 @@ void AdminPanel::setupUI() {
     QPushButton* clearBtn = new QPushButton("Clear Form");
     clearBtn->setObjectName("secondaryButton");
     clearBtn->setCursor(Qt::PointingHandCursor);
-    clearBtn->setMinimumHeight(36);
+    clearBtn->setMinimumHeight(42);
     formLayout->addRow(clearBtn);
 
     mainLayout->addWidget(formGroup, 1);
 
-    // Соединение сигналов
     connect(m_table, &QTableWidget::itemSelectionChanged,
             this, &AdminPanel::onTableSelectionChanged);
     connect(m_addButton, &QPushButton::clicked, this, &AdminPanel::onAddProduct);
@@ -153,7 +151,6 @@ void AdminPanel::setupUI() {
     connect(m_deleteButton, &QPushButton::clicked, this, &AdminPanel::onDeleteProduct);
     connect(clearBtn, &QPushButton::clicked, this, &AdminPanel::clearForm);
     
-    // Клавиша Enter запускает добавление/обновление в зависимости от состояния выбора
     connect(m_nameEdit, &QLineEdit::returnPressed, this, [this]() {
         if (m_selectedProductId >= 0) {
             onEditProduct();
